@@ -22,23 +22,29 @@ Design and develop an interactive chatbot with personality-driven responses, pro
    git clone https://github.com/yourusername/ai-chatbot.git
    cd ai-chatbot
 
-2. Install Dependencies: pip install -r requirements.txt
+2. **Install Dependencies**
+   ```bash
+    pip install -r requirements.txt
 
-3. Run the Flask Server: python app.py
+3.  **Run the Flask Server**
+    ```bash
+    python app.py
 
-4. Open in Browser: http://127.0.0.1:5000
+4.  **Open in Browser**
+ ```bash
+   http://127.0.0.1:5000
 
 ## 🎭 How the Personality Selection Works
 
 Choose a personality or create a custom one. The chatbot uses prompt engineering with the Gemini API to match the tone and style.
 
 Examples:
+
 Friendly → Warm, casual, and engaging.
+
 Proffesional → Professional and structured.
+
 Funny → Playful and witty.
+
 Custom → Make your own personality.
 
-## 🌐 Deployment
-
-The chatbot is hosted on a free platform.
-Live Demo: [Add your deployed link here]
