@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NatterNook</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+   
+  <div class="screen active" id="welcomeScreen">
+    <h1>Welcome to</h1>
+    <h1>NATTERNOOK!</h1>
+    <button onclick="goToPersonality()" class="start-btn">Start Chatting →</button>
+  </div>
+
+ <div class="screen hidden" id="personalityScreen">
+  <h2>Select a Personality</h2>
+  <div class="personalities">
+    <button type="button" class="personality" onclick="selectPersonality('Friendly')">😊 Friendly</button>
+    <button type="button" class="personality" onclick="selectPersonality('Professional')">🧑‍💼 Professional</button>
+    <button type="button" class="personality" onclick="selectPersonality('Funny')">😂 Funny</button>
+  </div>
+</div>
+
+
+  <div class="screen hidden" id="chatScreen">
+    <div class="sidebar" id="chatSidebar">
+    <button id="newChatBtn">+ New Chat</button>
+      <h3>Previous Chats</h3>
+      <div id="chatList"></div>
+    </div>
+
+    <div class="main-chat">
+      <div class="chat-header">
+        NatterNook - <span id="currentPersonality"></span>
+      </div>
+      <div class="chat-window" id="chatWindow"></div>
+      <form id="chatForm">
+        <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off" />
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  </div>
+
+
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
