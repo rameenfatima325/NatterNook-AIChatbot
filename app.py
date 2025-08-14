@@ -67,7 +67,7 @@ def chat():
     # Compose final prompt. Allow emojis and preserve formatting.
     prompt_parts = [
         f"You are a helpful chatbot with a {personality} personality.",
-        "Follow the user's tone but be concise and friendly.",
+        "Follow the user's tone.",
         # allow emojis and plain text
         "IMPORTANT: Return plain text only (no surrounding quotes, no HTML), preserve line breaks, "
         "and you are allowed to use emojis (e.g. 😊, 👍) when they help convey tone.",
