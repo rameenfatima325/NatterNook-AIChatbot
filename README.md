@@ -16,6 +16,21 @@ Design and develop an interactive chatbot with personality-driven responses, pro
 - **Backend**: Flask
 - **AI Model**: Gemini API
 
+# AI Chatbot
+## 🎭 How the Personality Selection Works
+
+Choose a personality or create a custom one. The chatbot uses prompt engineering with the Gemini API to match the tone and style.
+
+Examples:
+
+Friendly → Warm, casual, and engaging.
+
+Proffesional → Professional and structured.
+
+Funny → Playful and witty.
+
+Custom → Make your own personality.
+
 ## 🚀 How to Run Locally
 1. **Clone the Repository**
    ```bash
@@ -30,21 +45,9 @@ Design and develop an interactive chatbot with personality-driven responses, pro
     ```bash
     python app.py
 
+
 4.  **Open in Browser**
  ```bash
    http://127.0.0.1:5000
 
-## 🎭 How the Personality Selection Works
-
-Choose a personality or create a custom one. The chatbot uses prompt engineering with the Gemini API to match the tone and style.
-
-Examples:
-
-Friendly → Warm, casual, and engaging.
-
-Proffesional → Professional and structured.
-
-Funny → Playful and witty.
-
-Custom → Make your own personality.
 
