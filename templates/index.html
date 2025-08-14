@@ -7,26 +7,35 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-   
   <div class="screen active" id="welcomeScreen">
     <h1>Welcome to</h1>
     <h1>NATTERNOOK!</h1>
     <button onclick="goToPersonality()" class="start-btn">Start Chatting →</button>
   </div>
 
- <div class="screen hidden" id="personalityScreen">
-  <h2>Select a Personality</h2>
-  <div class="personalities">
-    <button type="button" class="personality" onclick="selectPersonality('Friendly')">😊 Friendly</button>
-    <button type="button" class="personality" onclick="selectPersonality('Professional')">🧑‍💼 Professional</button>
-    <button type="button" class="personality" onclick="selectPersonality('Funny')">😂 Funny</button>
-  </div>
-</div>
+  <div class="screen hidden" id="personalityScreen">
+    <h2>Select a Personality</h2>
+    <div class="personalities">
+      <button type="button" class="personality" onclick="selectPersonality('Friendly')">😊 Friendly</button>
+      <button type="button" class="personality" onclick="selectPersonality('Professional')">🧑‍💼 Professional</button>
+      <button type="button" class="personality" onclick="selectPersonality('Funny')">😂 Funny</button>
+      <button type="button" class="personality" id="customPersonalityBtn">✍️ Custom</button>
+    </div>
 
+    <!-- custom input stays inside personalityScreen -->
+    <div id="customInputContainer" class="custom-input-container" style="display:none;">
+      <input id="customPersonalityInput" type="text"
+             placeholder="Type personality (e.g. 'Poet', 'Strict Teacher')" autocomplete="off" />
+      <div class="custom-actions">
+        <button id="confirmCustomBtn" class="start-btn" type="button">Set</button>
+        <button id="cancelCustomBtn" class="start-btn" type="button" style="background:#e9efff;color:#333">Cancel</button>
+      </div>
+    </div>
+  </div> <!-- END personalityScreen -->
 
   <div class="screen hidden" id="chatScreen">
     <div class="sidebar" id="chatSidebar">
-    <button id="newChatBtn">+ New Chat</button>
+      <button id="newChatBtn">+ New Chat</button>
       <h3>Previous Chats</h3>
       <div id="chatList"></div>
     </div>
@@ -42,8 +51,6 @@
       </form>
     </div>
   </div>
-
-
 
   <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>

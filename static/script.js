@@ -39,13 +39,14 @@ function cleanupEmptyStub() {
   currentChatId = remaining[0] || "";
 
   // update UI
+  const cp = document.getElementById("currentPersonality");
   if (currentChatId) {
     personality = chats[currentChatId].personality || "";
-    document.getElementById("currentPersonality").textContent = personality;
+    if (cp) cp.textContent = personality;
     renderChatWindow();
   } else {
     personality = "";
-    document.getElementById("currentPersonality").textContent = "";
+    if (cp) cp.textContent = "";
     const chatWindow = document.getElementById("chatWindow");
     if (chatWindow) chatWindow.innerHTML = "";
   }
@@ -104,6 +105,8 @@ function showScreen(screenKey, { push = true } = {}) {
   // If we're leaving the personality screen, cleanup any empty stub
   if (currentKey === "personality" && screenKey !== "personality") {
     cleanupEmptyStub();
+    // ensure custom input hides when leaving personality screen
+    if (typeof hideCustomPersonalityInput === "function") hideCustomPersonalityInput();
   }
 
   const current = Object.values(SCREEN_IDS).find(id => document.getElementById(id)?.classList.contains("active"));
@@ -144,13 +147,15 @@ function goToPersonality() {
   renderChatList();
 
   // clear displayed personality while choosing
-  document.getElementById("currentPersonality").textContent = "";
+  const cp = document.getElementById("currentPersonality");
+  if (cp) cp.textContent = "";
   showScreen("personality");
 }
 
 function selectPersonality(selected) {
   personality = selected;
-  document.getElementById("currentPersonality").textContent = selected;
+  const cp = document.getElementById("currentPersonality");
+  if (cp) cp.textContent = selected;
 
   // If current stub exists and has no messages and no personality, reuse it.
   if (currentChatId && chats[currentChatId] &&
@@ -162,6 +167,9 @@ function selectPersonality(selected) {
     currentChatId = `chat_${Date.now()}`;
     chats[currentChatId] = { personality: selected, title: "", messages: [] };
   }
+
+  // hide custom input if it was visible
+  if (typeof hideCustomPersonalityInput === "function") hideCustomPersonalityInput();
 
   saveChats();
   renderChatList();
@@ -296,7 +304,8 @@ function renderChatList() {
     titleEl.onclick = () => {
       currentChatId = id;
       personality = chat.personality || "";
-      document.getElementById("currentPersonality").textContent = personality;
+      const cp = document.getElementById("currentPersonality");
+      if (cp) cp.textContent = personality;
       renderChatWindow();
       showScreen("chat");
       renderChatList();
@@ -396,11 +405,14 @@ function deleteChat(id) {
     currentChatId = remaining[0] || "";
     if (currentChatId) {
       personality = chats[currentChatId].personality;
-      document.getElementById("currentPersonality").textContent = personality;
+      const cp = document.getElementById("currentPersonality");
+      if (cp) cp.textContent = personality;
       renderChatWindow();
     } else {
-      document.getElementById("currentPersonality").textContent = "";
-      document.getElementById("chatWindow").innerHTML = "";
+      const cp = document.getElementById("currentPersonality");
+      if (cp) cp.textContent = "";
+      const cw = document.getElementById("chatWindow");
+      if (cw) cw.innerHTML = "";
     }
   }
 
@@ -410,7 +422,11 @@ function deleteChat(id) {
 
 /* ---------------- Persistence ---------------- */
 function saveChats() {
-  localStorage.setItem("chatterly_chats", JSON.stringify(chats));
+  try {
+    localStorage.setItem("chatterly_chats", JSON.stringify(chats));
+  } catch (e) {
+    // ignore localStorage write errors (e.g., storage full)
+  }
 }
 function loadChats() {
   const saved = localStorage.getItem("chatterly_chats");
@@ -429,7 +445,8 @@ function loadChats() {
   // Render the chat window and set personality label if a chat is selected
   if (currentChatId && chats[currentChatId]) {
     personality = chats[currentChatId].personality || "";
-    document.getElementById("currentPersonality").textContent = personality;
+    const cp = document.getElementById("currentPersonality");
+    if (cp) cp.textContent = personality;
     renderChatWindow();
   }
 }
@@ -468,54 +485,128 @@ async function createChatTitleIfNeeded(chatId) {
 }
 
 /* ---------------- Form submission ---------------- */
-document.getElementById("chatForm").addEventListener("submit", async function (e) {
-  e.preventDefault();
-  const input = document.getElementById("userInput");
-  const message = input.value.trim();
-  if (!message) return;
+(function wireChatForm() {
+  const chatForm = document.getElementById("chatForm");
+  if (!chatForm) return;
 
-  appendMessage("user", message);
+  chatForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const input = document.getElementById("userInput");
+    const message = input?.value.trim();
+    if (!message) return;
+
+    appendMessage("user", message);
+    if (input) input.value = "";
+    appendTypingAnimation();
+
+    try {
+      // only include history if there are messages
+      const recentFull = chats[currentChatId]?.messages || [];
+      const recent = recentFull.length ? recentFull.slice(-20) : [];
+
+      const history = recent.map(m => ({
+        role: m.sender === "user" ? "user" : "assistant",
+        content: m.text
+      }));
+
+      const res = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message,
+          personality,
+          history // empty array if no messages
+        })
+      });
+
+      const data = await res.json();
+      removeTypingAnimation();
+      appendMessage("bot", data.response);
+    } catch (err) {
+      removeTypingAnimation();
+      appendMessage("bot", "[Error] Failed to get response.");
+    }
+  });
+})();
+
+(function wireNewChatBtn() {
+  const newChatBtn = document.getElementById("newChatBtn");
+  if (!newChatBtn) return;
+  newChatBtn.addEventListener("click", () => goToPersonality());
+})();
+
+/* ---------------- Custom personality input handlers ---------------- */
+
+function showCustomPersonalityInput() {
+  const container = document.getElementById("customInputContainer");
+  const input = document.getElementById("customPersonalityInput");
+  if (!container || !input) return;
+  container.style.display = "flex";
+  // clear previous value and focus
   input.value = "";
-  appendTypingAnimation();
+  setTimeout(() => input.focus(), 50);
+}
 
-  try {
-    // only include history if there are messages
-    const recentFull = chats[currentChatId]?.messages || [];
-    const recent = recentFull.length ? recentFull.slice(-20) : [];
+function hideCustomPersonalityInput() {
+  const container = document.getElementById("customInputContainer");
+  if (!container) return;
+  container.style.display = "none";
+}
 
-    const history = recent.map(m => ({
-      role: m.sender === "user" ? "user" : "assistant",
-      content: m.text
-    }));
-
-    const res = await fetch("/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message,
-        personality,
-        history // empty array if no messages
-      })
-    });
-
-    const data = await res.json();
-    removeTypingAnimation();
-    appendMessage("bot", data.response);
-  } catch (err) {
-    removeTypingAnimation();
-    appendMessage("bot", "[Error] Failed to get response.");
+function confirmCustomPersonality() {
+  const input = document.getElementById("customPersonalityInput");
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) {
+    // subtle UX: keep focus if empty
+    input.focus();
+    return;
   }
-});
+  // Use existing selectPersonality flow
+  selectPersonality(val);
+  hideCustomPersonalityInput();
+}
 
-document.getElementById("newChatBtn").addEventListener("click", () => {
-  goToPersonality();
-});
+/* attach listeners safely (call from window.onload) */
+function wireCustomPersonalityControls() {
+  const customBtn = document.getElementById("customPersonalityBtn");
+  const confirmBtn = document.getElementById("confirmCustomBtn");
+  const cancelBtn = document.getElementById("cancelCustomBtn");
+  const input = document.getElementById("customPersonalityInput");
+
+  if (customBtn) customBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    showCustomPersonalityInput();
+  });
+
+  if (confirmBtn) confirmBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    confirmCustomPersonality();
+  });
+
+  if (cancelBtn) cancelBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    hideCustomPersonalityInput();
+  });
+
+  if (input) {
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        confirmCustomPersonality();
+      } else if (e.key === "Escape") {
+        hideCustomPersonalityInput();
+      }
+    });
+  }
+}
 
 /* ---------------- Init ---------------- */
 window.onload = function () {
   setConsistentBackground();
   loadChats();
   initRouter();
+  wireCustomPersonalityControls();
   window.scrollTo({ top: 0, left: 0 });
 };
 
