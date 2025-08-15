@@ -121,6 +121,7 @@ def summarize():
         return jsonify({"title": title})
     except Exception:
         return jsonify({"title": ""}), 500
-    
-    if __name__ == "__main__":
-        app.run(debug=True)
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
